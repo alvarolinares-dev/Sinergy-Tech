@@ -1,7 +1,7 @@
 ---
 titulo: Evaluación crediticia de microempresarios
-tipo: Manual
-fecha: 2026-01-25
+tipo: Procedimiento
+fecha: 2025-11-20
 ---
 # Evaluación crediticia - MicroAvanza Colombia
 

@@ -1,7 +1,7 @@
 ---
 titulo: Constitución de garantías mobiliarias
 tipo: Procedimiento
-fecha: 2026-06-11
+fecha: 2026-09-08
 ---
 # Garantías mobiliarias - MicroAvanza Perú
 

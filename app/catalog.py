@@ -76,6 +76,11 @@ class Catalogo:
             docs = docs[:limite]
         return docs
 
+    def texto_documento(self, ruta: str) -> str:
+        with self.lock:
+            return "\n".join(r[0] for r in self.con.execute(
+                "SELECT texto FROM chunks WHERE ruta=? ORDER BY orden", (ruta,)))
+
     def chunks_con_metadata(self) -> list[dict]:
         with self.lock:
             return [dict(r) for r in self.con.execute(

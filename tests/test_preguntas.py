@@ -59,7 +59,6 @@ def test_usuario_sin_permiso_no_ve_doc_restringido():
     pregunta = "¿Qué dice la política de remuneraciones ejecutivas del Corporativo?"
     r = responder(pregunta, "luis.analista")
     assert "remuneraciones" not in r["respuesta"].lower() and not r["fuentes"]
-    # Control positivo: el Directorio sí lo ve
     assert responder(pregunta, "pedro.directorio")["fuentes"]
 
 
@@ -75,6 +74,13 @@ def test_b_ultimos_documentos_cargados():
     r = responder("¿Cuáles son los últimos documentos que se cargaron?", ADMIN)
     assert "2026-07-12" in r["respuesta"]
     assert len(r["fuentes"]) == 5
+
+
+def test_b_ultimos_respeta_permisos():
+    r = responder("¿Cuáles son los últimos documentos que se cargaron?", "luis.analista")
+    assert r["fuentes"] and all(
+        "/Prendia/Peru/" in f["link"] or "/Corporativo/Todos/Politicas/" in f["link"] for f in r["fuentes"]
+    )
 
 
 def test_b_documentos_julio():
@@ -116,4 +122,3 @@ def test_b_compara_bonificaciones_peru_chile():
     assert "semestral" in r["respuesta"]
     assert any("/Peru/" in f["link"] for f in r["fuentes"])
     assert any("/Chile/" in f["link"] for f in r["fuentes"])
-

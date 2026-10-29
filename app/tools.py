@@ -96,13 +96,7 @@ def consultar_catalogo(
     emp, pa, err = _validar_opcional(empresa, pais)
     if err:
         return {"error": err}
-    if contiene:
-        needle = norm(contiene)
-        rutas_texto = {c["ruta"] for c in CATALOGO.chunks_con_metadata() if needle in norm(c["texto"])}
-        docs = CATALOGO.documentos(emp, pa, carpeta, tipo, desde, hasta, contiene=None, limite=None)
-        docs = [d for d in docs if d["ruta"] in rutas_texto]
-    else:
-        docs = CATALOGO.documentos(emp, pa, carpeta, tipo, desde, hasta, contiene=None, limite=None)
+    docs = CATALOGO.documentos(emp, pa, carpeta, tipo, desde, hasta, contiene=contiene, limite=None)
     docs = [d for d in docs if puede_ver(usuario, d["ruta"])]
     if limit:
         docs = docs[: int(limit)]
