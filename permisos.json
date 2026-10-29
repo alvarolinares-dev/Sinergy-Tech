@@ -1,0 +1,18 @@
+{
+  "grupos": {
+    "normativa_admin": [""],
+    "prendia_peru": ["Prendia/Peru/", "Corporativo/Todos/Politicas/"],
+    "prendia_colombia": ["Prendia/Colombia/", "Corporativo/Todos/Politicas/"],
+    "prendia_chile": ["Prendia/Chile/", "Corporativo/Todos/Politicas/"],
+    "microavanza_peru": ["MicroAvanza/Peru/", "Corporativo/Todos/Politicas/"],
+    "microavanza_colombia": ["MicroAvanza/Colombia/", "Corporativo/Todos/Politicas/"],
+    "autofacil_chile": ["AutoFacil/Chile/", "Corporativo/Todos/Politicas/"],
+    "directorio": ["Corporativo/Todos/"]
+  },
+  "usuarios": {
+    "ana.gerente": ["normativa_admin"],
+    "luis.analista": ["prendia_peru"],
+    "carla.cobranzas": ["prendia_peru", "prendia_colombia", "prendia_chile"],
+    "pedro.directorio": ["directorio"]
+  }
+}
