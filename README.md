@@ -33,3 +33,16 @@ Docs interactivas: http://127.0.0.1:8000/docs
 ```
 docker build -t altamar-normativa . && docker run -p 8000:8000 altamar-normativa
 ```
+
+## Despliegue en Render
+1. Subir el repo a GitHub.
+2. En Render: **New > Blueprint** y seleccionar el repo (usa `render.yaml`).
+3. Configurar `OPENAI_API_KEY` en Environment (opcional; sin clave funciona en modo reglas).
+4. Verificar `https://<servicio>.onrender.com/health` y probar `POST /chat`.
+
+Comando de inicio: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+
+## Preguntas de catálogo soportadas (tipo B)
+`consultar_catalogo` acepta empresa/país opcionales, `carpeta`, `tipo`, `desde`/`hasta`, `contiene` y `limite`
+(orden por fecha desc); los permisos siempre se aplican. Ej.: "¿Cuáles son los últimos documentos que se cargaron?",
+"¿Qué documentos se añadieron o actualizaron en julio?", "¿Qué documentos mencionan \"garantías mobiliarias\"?".

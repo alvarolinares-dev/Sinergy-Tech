@@ -71,9 +71,27 @@ def buscar_contenido(consulta: str, empresa: str, pais: str, usuario: str, top_k
     return {"resultados": [{k: r[k] for k in ("titulo", "link", "empresa", "pais", "texto", "score")} for r in res]}
 
 
-def consultar_catalogo(empresa: str, pais: str, usuario: str, carpeta: str | None = None, tipo: str | None = None) -> dict:
-    emp, pa, err = _validar(empresa, pais)
-    if err:
-        return {"error": err}
+def consultar_catalogo(usuario: str, empresa: str | None = None, pais: str | None = None,
+                       carpeta: str | None = None, tipo: str | None = None, desde: str | None = None,
+                       hasta: str | None = None, contiene: str | None = None, limite: int | None = None) -> dict:
+    """Consulta de catálogo (tipo B). Empresa/país OPCIONALES; permisos SIEMPRE aplicados.
+    desde/hasta en formato YYYY-MM-DD; contiene = texto buscado en título y contenido; orden fecha desc."""
+    emp = _canon(empresa, EMPRESA_PAISES) if empresa else None
+    pa = _canon(pais, ["Peru", "Colombia", "Chile", "Todos"]) if pais else None
+    if (empresa and not emp) or (pais and not pa):
+        return {"error": "Empresa o país no reconocido."}
+    if emp and pa and pa not in EMPRESA_PAISES[emp]:
+        return {"error": f"{emp} no opera en {pa}."}
     docs = [d for d in CATALOGO.documentos(emp, pa, carpeta, tipo) if puede_ver(usuario, d["ruta"])]
-    return {"documentos": [{k: d[k] for k in ("titulo", "tipo", "fecha", "carpeta", "link")} for d in docs]}
+    if desde:
+        docs = [d for d in docs if d["fecha"] >= desde]
+    if hasta:
+        docs = [d for d in docs if d["fecha"] <= hasta]
+    if contiene:
+        c = norm(contiene)
+        docs = [d for d in docs if c in norm(d["titulo"] + "\n" + CATALOGO.texto_documento(d["ruta"]))]
+    docs.sort(key=lambda d: d["fecha"], reverse=True)
+    if limite:
+        docs = docs[: int(limite)]
+    campos = ("titulo", "tipo", "fecha", "empresa", "pais", "carpeta", "link")
+    return {"documentos": [{k: d[k] for k in campos} for d in docs]}

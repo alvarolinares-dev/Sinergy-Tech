@@ -1,7 +1,7 @@
 ---
 titulo: Procedimiento de remate de prendas
 tipo: Procedimiento
-fecha: 2026-05-20
+fecha: 2026-07-14
 ---
 # Remate de prendas - Prendia Perú
 
