@@ -69,3 +69,51 @@ def test_api_health_y_chat(monkeypatch):
         assert c.get("/health").json()["status"] == "ok"
         r = c.post("/chat", json={"prompt": "bonos Prendia Chile", "usuario": ADMIN})
         assert r.status_code == 200 and r.json()["fuentes"]
+
+
+def test_b_ultimos_documentos_cargados():
+    r = responder("¿Cuáles son los últimos documentos que se cargaron?", ADMIN)
+    assert "2026-07-12" in r["respuesta"]
+    assert len(r["fuentes"]) == 5
+
+
+def test_b_documentos_julio():
+    r = responder("¿Qué documentos se añadieron o actualizaron en julio?", ADMIN)
+    titulos = {f["titulo"] for f in r["fuentes"]}
+    assert "Código de ética y conducta" in titulos
+    assert "Política de remuneraciones ejecutivas" in titulos
+
+
+def test_b_carpeta_cobranzas_prendia():
+    r = responder("Dame los documentos de la carpeta de Cobranzas de Prendia.", ADMIN)
+    links = " ".join(f["link"] for f in r["fuentes"])
+    assert "/Prendia/Peru/Cobranzas/" in links
+    assert "/Prendia/Colombia/Cobranzas/" in links
+    assert "/Prendia/Chile/Cobranzas/" in links
+
+
+def test_b_procedimientos_colombia_este_ano():
+    r = responder("¿Qué procedimientos de Colombia se actualizaron este año?", ADMIN)
+    titulos = {f["titulo"] for f in r["fuentes"]}
+    assert "Límite de efectivo en agencias" in titulos
+    assert all("/Colombia/" in f["link"] for f in r["fuentes"])
+
+
+def test_b_documentos_mencionan_garantias():
+    r = responder("¿Qué documentos mencionan 'garantías mobiliarias'?", ADMIN)
+    assert any("garant" in f["titulo"].lower() for f in r["fuentes"])
+
+
+def test_b_efectivo_colombia_sin_empresa():
+    r = responder("¿Cuál es el monto máximo de efectivo en una agencia de Colombia?", ADMIN)
+    assert "50.000.000" in r["respuesta"]
+    assert any("Prendia" in f["link"] for f in r["fuentes"])
+
+
+def test_b_compara_bonificaciones_peru_chile():
+    r = responder("Compara la política de bonificaciones de Perú y de Chile.", ADMIN)
+    assert "15%" in r["respuesta"]
+    assert "semestral" in r["respuesta"]
+    assert any("/Peru/" in f["link"] for f in r["fuentes"])
+    assert any("/Chile/" in f["link"] for f in r["fuentes"])
+

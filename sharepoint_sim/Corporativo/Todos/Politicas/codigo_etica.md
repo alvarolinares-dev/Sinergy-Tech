@@ -1,7 +1,7 @@
 ---
 titulo: Código de ética y conducta
 tipo: Política
-fecha: 2025-12-01
+fecha: 2026-07-12
 ---
 # Código de ética - Grupo Altamar
 

@@ -33,14 +33,48 @@ class Catalogo:
             self.con.execute("DELETE FROM documentos WHERE ruta=?", (ruta,))
             self.con.commit()
 
-    def documentos(self, empresa=None, pais=None, carpeta=None, tipo=None) -> list[dict]:
-        sql, params = "SELECT * FROM documentos WHERE 1=1", []
-        for col, val in (("empresa", empresa), ("pais", pais), ("carpeta", carpeta), ("tipo", tipo)):
+    def documentos(
+        self,
+        empresa=None,
+        pais=None,
+        carpeta=None,
+        tipo=None,
+        desde: str | None = None,
+        hasta: str | None = None,
+        contiene: str | None = None,
+        limite: int | None = None,
+    ) -> list[dict]:
+        params: list = []
+        sql = "SELECT * FROM documentos d WHERE 1=1"
+        for col, val in (("d.empresa", empresa), ("d.pais", pais), ("d.carpeta", carpeta)):
             if val:
                 sql += f" AND lower({col})=lower(?)"
                 params.append(val)
+        if tipo:
+            sql += " AND lower(d.tipo)=lower(?)"
+            params.append(tipo)
+        if desde:
+            sql += " AND d.fecha >= ?"
+            params.append(desde)
+        if hasta:
+            sql += " AND d.fecha <= ?"
+            params.append(hasta)
+        sql += " ORDER BY d.fecha DESC, d.ruta"
         with self.lock:
-            return [dict(r) for r in self.con.execute(sql + " ORDER BY ruta", params)]
+            docs = [dict(r) for r in self.con.execute(sql, params)]
+        if contiene:
+            from .textutil import norm
+            needle = norm(contiene)
+            filtrados = []
+            with self.lock:
+                for d in docs:
+                    textos = self.con.execute("SELECT texto FROM chunks WHERE ruta=?", (d["ruta"],)).fetchall()
+                    if any(needle in norm(t["texto"]) for t in textos):
+                        filtrados.append(d)
+            docs = filtrados
+        if limite:
+            docs = docs[:limite]
+        return docs
 
     def chunks_con_metadata(self) -> list[dict]:
         with self.lock:

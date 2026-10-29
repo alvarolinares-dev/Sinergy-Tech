@@ -1,4 +1,4 @@
-"""Herramientas del agente. País y empresa son OBLIGATORIOS y se aplica el filtro de permisos."""
+"""Herramientas del agente. Permisos obligatorios; empresa/país opcionales en consultar_catalogo."""
 import json
 from pathlib import Path
 
@@ -55,8 +55,19 @@ def _validar(empresa, pais):
     return emp, pa, None
 
 
+def _validar_opcional(empresa, pais):
+    emp = _canon(empresa, EMPRESA_PAISES) if empresa else None
+    pa = _canon(pais, ["Peru", "Colombia", "Chile", "Todos"]) if pais else None
+    if empresa and not emp:
+        return None, None, "Empresa no reconocida."
+    if pais and not pa:
+        return None, None, "País no reconocido."
+    if emp and pa and pa not in EMPRESA_PAISES[emp]:
+        return None, None, f"{emp} no opera en {pa}."
+    return emp, pa, None
+
+
 def _filtro(usuario, emp, pa):
-    # Solo docs de la empresa/país pedidos (o Corporativo transversal) y con permiso del usuario
     def f(meta):
         alcance = (meta["empresa"] == emp and meta["pais"] == pa) or meta["empresa"] == "Corporativo"
         return alcance and puede_ver(usuario, meta["ruta"])
@@ -71,9 +82,28 @@ def buscar_contenido(consulta: str, empresa: str, pais: str, usuario: str, top_k
     return {"resultados": [{k: r[k] for k in ("titulo", "link", "empresa", "pais", "texto", "score")} for r in res]}
 
 
-def consultar_catalogo(empresa: str, pais: str, usuario: str, carpeta: str | None = None, tipo: str | None = None) -> dict:
-    emp, pa, err = _validar(empresa, pais)
+def consultar_catalogo(
+    usuario: str,
+    empresa: str | None = None,
+    pais: str | None = None,
+    carpeta: str | None = None,
+    tipo: str | None = None,
+    desde: str | None = None,
+    hasta: str | None = None,
+    contiene: str | None = None,
+    limit: int | None = None,
+) -> dict:
+    emp, pa, err = _validar_opcional(empresa, pais)
     if err:
         return {"error": err}
-    docs = [d for d in CATALOGO.documentos(emp, pa, carpeta, tipo) if puede_ver(usuario, d["ruta"])]
-    return {"documentos": [{k: d[k] for k in ("titulo", "tipo", "fecha", "carpeta", "link")} for d in docs]}
+    if contiene:
+        needle = norm(contiene)
+        rutas_texto = {c["ruta"] for c in CATALOGO.chunks_con_metadata() if needle in norm(c["texto"])}
+        docs = CATALOGO.documentos(emp, pa, carpeta, tipo, desde, hasta, contiene=None, limite=None)
+        docs = [d for d in docs if d["ruta"] in rutas_texto]
+    else:
+        docs = CATALOGO.documentos(emp, pa, carpeta, tipo, desde, hasta, contiene=None, limite=None)
+    docs = [d for d in docs if puede_ver(usuario, d["ruta"])]
+    if limit:
+        docs = docs[: int(limit)]
+    return {"documentos": [{k: d[k] for k in ("titulo", "tipo", "fecha", "carpeta", "link", "empresa", "pais")} for d in docs]}

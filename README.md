@@ -33,3 +33,26 @@ Docs interactivas: http://127.0.0.1:8000/docs
 ```
 docker build -t altamar-normativa . && docker run -p 8000:8000 altamar-normativa
 ```
+
+## Despliegue en Render
+
+1. Conecta el repositorio en [Render](https://render.com) como **Web Service** (Python).
+2. Usa el archivo `render.yaml` incluido o configura manualmente:
+   - **Build:** `pip install -r requirements.txt`
+   - **Start:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+3. Variables recomendadas:
+   - `WATCH=0` (desactiva el watcher de archivos en producción)
+   - `OPENAI_API_KEY` (opcional; sin ella el agente usa reglas offline)
+4. Tras el deploy, valida `GET /health` y prueba `POST /chat` con un usuario de `permisos.json`.
+
+## Despliegue en Render
+
+1. Conecta el repositorio [Sinergy-Tech](https://github.com/alvarolinares-dev/Sinergy-Tech) en [Render](https://render.com).
+2. Crea un **Web Service**; Render detectará `render.yaml` en la raíz del proyecto.
+3. Variables de entorno recomendadas:
+   - `WATCH=0` (desactiva el watcher de archivos en producción)
+   - `OPENAI_API_KEY` (opcional; sin clave usa el router por reglas)
+4. El servicio arranca con:
+   `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+5. Valida con `GET /health` y prueba `POST /chat` con un usuario de `permisos.json` (por ejemplo `ana.gerente`).
+
